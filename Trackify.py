@@ -30,7 +30,7 @@ connection = sqlite3.connect('Trackify.db') # If no database is found within dir
 
 
 try:
-    connection.execute('CREATE TABLE track (name text, artist text, timeperiod datetime)')
+    connection.execute('CREATE TABLE track (name text, artist text, duration bigint, played_at datetime, released datetime)')
     connection.execute('CREATE TABLE time (time int)')
     print("Creating Trackify Database")
 except:
@@ -66,9 +66,12 @@ print("Tracking the following songs: \n")
 for song in recentlyPlayed:
     name = song['track']['name']
     name = name.replace("'","")
-    print(name)
     artist = song['track']['album']['artists'][0]['name']
-    cursor.execute("INSERT INTO track (name, artist, timeperiod) VALUES('{0}','{1}','{2}')".format(name, artist, time))
+    duration = song['track']['duration_ms']
+    played_at = song['played_at']
+    released = song['track']['album']['release_date']
+    print(name)
+    cursor.execute("INSERT INTO track (name, artist, duration, played_at, released) VALUES('{0}','{1}','{2}', '{3}', '{4}')".format(name, artist, duration, played_at, released))
 
 # ensure information gets saved to db
 connection.commit()

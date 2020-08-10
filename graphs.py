@@ -35,7 +35,7 @@ def HorizontalBar(data, xLabel, yLabel, title, graphColor):
     width = x.get_width()
     # (x, y, text) x,y being the position of the text.
     ax.text(width / 2 , count + 0.1,
-            str(width),
+            str(round(width, 2)), # round float 
             ha='center', va='bottom',
             fontweight = 'extra bold'
           )
