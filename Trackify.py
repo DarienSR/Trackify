@@ -16,11 +16,14 @@ import datetime
 scope = 'playlist-modify-private playlist-modify-public user-read-recently-played user-read-playback-position user-top-read user-read-currently-playing user-read-playback-state'
 
 
-username = ""  # ENTER SPOTIFY USERNAME HERE
+username = "DarienSR"  # ENTER SPOTIFY USERNAME HERE
 
+# ENV Application Tokens. 
+CLIENT_ID = os.environ.get('SPOTIPY_CLIENT_ID')
+CLIENT_SECRET = os.environ.get('SPOTIPY_CLIENT_SECRET')
 
-# ENV Tokens. Prompt user for access to their account information
-token = util.prompt_for_user_token(username, scope, os.environ.get('SPOTIPY_CLIENT_ID'), os.environ.get('SPOTIPY_CLIENT_SECRET'), 'http://localhost:3000/')
+# Prompt user for access to their account informatiSon
+token = util.prompt_for_user_token(username, scope, CLIENT_ID, CLIENT_SECRET, 'http://localhost:3000/')
 sp = spotipy.Spotify(auth=token)
 
 
@@ -30,7 +33,7 @@ connection = sqlite3.connect('Trackify.db') # If no database is found within dir
 
 
 try:
-    connection.execute('CREATE TABLE track (name text, artist text, duration bigint, played_at datetime, released datetime)')
+    connection.execute('CREATE TABLE track (name text, artist text, duration bigint, played_at datetime, released datetime, song_img text, artist_uri text)')
     connection.execute('CREATE TABLE time (time int)')
     print("Creating Trackify Database")
 except:
@@ -63,6 +66,7 @@ recentlyPlayed = sp.current_user_recently_played(limit=50, after=sinceLast, befo
 time = datetime.datetime.now()
 
 print("Tracking the following songs: \n")
+
 for song in recentlyPlayed:
     name = song['track']['name']
     name = name.replace("'","")
@@ -70,9 +74,10 @@ for song in recentlyPlayed:
     duration = song['track']['duration_ms']
     played_at = song['played_at']
     released = song['track']['album']['release_date']
+    song_img = song['track']['album']['images'][2]['url']
+    artist_uri = song['track']['album']['artists'][0]['uri']
     print(name)
-    cursor.execute("INSERT INTO track (name, artist, duration, played_at, released) VALUES('{0}','{1}','{2}', '{3}', '{4}')".format(name, artist, duration, played_at, released))
-
+    cursor.execute("INSERT INTO track (name, artist, duration, played_at, released, song_img, artist_uri) VALUES ('{0}','{1}','{2}', '{3}', '{4}', '{5}', '{6}')".format(name, artist, duration, played_at, released, song_img, artist_uri))
 # ensure information gets saved to db
 connection.commit()
 # close the db

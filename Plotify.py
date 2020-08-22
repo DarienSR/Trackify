@@ -5,6 +5,7 @@ import sqlite3
 from graphs import *  # import our graphing file. Holds the different functions to create our graphs
 from matplotlib.backends.backend_pdf import PdfPages
 import datetime
+
 # CONNECT TO DATABASE
 connection = sqlite3.connect('Trackify.db')
 cursor = connection.cursor()
@@ -29,44 +30,94 @@ for row in db:
     timeSpentListeningToArtist[row[1]] += ((row[2] / 1000) / 60)
     timeSpentListeningToSong[row[0]] += ((row[2] / 1000) / 60)
     
-
-
 Top10Artists = countArtistPlayedAmount.most_common(10)
 Time10Artists = timeSpentListeningToArtist.most_common(10)
 Top10Songs = countSongPlayedAmount.most_common(10)
 Time10Songs = timeSpentListeningToSong.most_common(10)
 
-
 # CLOSE DATABASE
 connection.close()
 
+# Generate The Different Plots/Images
+HorizontalBar(Top10Artists, "Times Played", "Artist", "Top 10 Most Listened to Artist", "#02e840", "./Images/Top10Artists.png")
+HorizontalBar(Top10Songs, "Times Played", "Song", "Top 10 Most Listened to Songs", "#02e840", "./Images/Top10Songs.png")
+
+
+# TO DO: Get Additional Spotify Information.
+
+
 # CREATE THE PDF REPORT
+from reportlab.pdfgen import canvas
+
+pdfName = "TrackifyReport_%s.pdf" % (datetime.date.today()) # Append todays date to the pdf name
+pdf = canvas.Canvas(pdfName)
+
+pdf.setTitle(pdfName) # Title of PDF in title bar
+
+MAIN_FONT = "Courier-Bold"
+
+# Title on the page
+pdf.setFont('Courier-Bold', 36)
+pdf.drawCentredString(300, 770, "Trackify Report")
+
+# Set Date below title
+datex = "%s" % (datetime.date.today())
+pdf.setFont(MAIN_FONT, 20) # update font
+pdf.drawCentredString(300, 720, datex)
+
+# Left of the page, display quick stats.
+pdf.line(30, 710, 560, 710) # Horizontal Line
+pdf.setFont(MAIN_FONT, 10) # update font
+text = pdf.beginText()
+text.setTextOrigin(40, 675)
+text.textLines(""" 
+Total Listening Time: %s minutes | %s hours\n
+Top Artist: %s | Played %s time(s)\n
+Top Song: %s | Played %s time(s)\n
+""" % (round(totalTimeSpentListening, 2), round(totalTimeSpentListening / 60), Top10Artists[0][0], Top10Artists[0][1], Top10Songs[0][0], Top10Songs[0][1]))
+pdf.drawText(text)
+
+pdf.line(30, 600, 560, 600) # Horizontal Line
+
+# Sub Header Top 10 Artists 
+text = "Top 10 Artists"
+pdf.setFont(MAIN_FONT, 18) # update font
+pdf.drawString(40, 560, text)
+
+pdf.setFont(MAIN_FONT, 10) # update font again
+
+string = ""
+count = 1
+for artist in Top10Artists:
+    string += "%s. %s | Played %s time(s)\n\n" % (count, artist[0], artist[1])
+    count = count + 1
+print(string)
+text = pdf.beginText()
+text.setTextOrigin(40, 535)
+text.textLines(string)
+pdf.drawText(text)
+
+pdf.line(30, 290, 560, 290) # Horizontal Line
+
+# Sub Header Top 10 Songs 
+text = "Top 10 Songs"
+pdf.setFont(MAIN_FONT, 18) # update font
+pdf.drawString(40, 265, text)
+
+pdf.setFont(MAIN_FONT, 10) # update font again
 
 
-pdfName = "TestTrackifyReport_%s.pdf" % (datetime.date.today()) # Append todays date to the pdf name
+string = ""
+count = 1
+for song in Top10Songs:
+    string += "%s. %s | Played %s time(s)\n\n" % (count, song[0], song[1])
+    count = count + 1
+print(string)
+text = pdf.beginText()
+text.setTextOrigin(40, 240)
+text.textLines(string)
+pdf.drawText(text)
 
-with PdfPages(pdfName) as pdf:
 
-    firstPage = plt.figure(figsize=(11.69,8.27))
-    firstPage.clf()
-    txt = "Trackify Report\n {}\n\n Quick Overview:\n Total Time Spent Listening to Music: {:.2f}\n Favorite Song: {}\n Favorite Artist: {}".format(datetime.date.today(), totalTimeSpentListening, Top10Songs[0][0], Top10Artists[0][0]) 
-    firstPage.text(0.5,0.5,txt, transform=firstPage.transFigure, size=24, ha="center")
-    pdf.savefig()
-    plt.close()
 
-    # We are creating the plot/figure, which is being returned and saved to the pdf (each pdf.savefig saves it on its own page)
-    # We are using our top 10 to generate the top 5 and 3.
-    pdf.savefig(HorizontalBar(Top10Songs[:3], "Times Played", "Song", "Top 3 Most Listened to Songs", "#ac053e"), bbox_inches='tight')
-    pdf.savefig(HorizontalBar(Top10Artists[:3], "Times Played", "Artist", "Top 3 Artists", "#3498eb"), bbox_inches='tight') 
-    pdf.savefig(HorizontalBar(Time10Songs[:3], "Time Listened (Minutes)", "Song", "Time Spent Listening to Top 3 Songs", "#3498eb"), bbox_inches='tight') 
-    pdf.savefig(HorizontalBar(Time10Artists[:3], "Time Listened (Minutes)", "Artist", "Time Spent Listening to Top 3 Artist", "#42f57e"), bbox_inches='tight') 
-
-    pdf.savefig(HorizontalBar(Top10Songs[:5], "Times Played", "Song", "Top 5 Most Listened to Songs", "#ac053e"), bbox_inches='tight')
-    pdf.savefig(HorizontalBar(Top10Artists[:5], "Times Played", "Artist", "Top 5 Artists", "#3498eb"), bbox_inches='tight') 
-    pdf.savefig(HorizontalBar(Time10Songs[:5], "Time Listened (Minutes)", "Song", "Time Spent Listening to Top 5 Songs", "#3498eb"), bbox_inches='tight') 
-    pdf.savefig(HorizontalBar(Time10Artists[:5], "Time Listened (Minutes)", "Artist", "Time Spent Listening to Top 5 Artist", "#42f57e"), bbox_inches='tight') 
-
-    pdf.savefig(HorizontalBar(Top10Songs, "Times Played", "Song", "Top 10 Most Listened to Songs", "#ac053e"), bbox_inches='tight')
-    pdf.savefig(HorizontalBar(Top10Artists, "Times Played", "Artist", "Top 10 Artists", "#3498eb"), bbox_inches='tight') 
-    pdf.savefig(HorizontalBar(Time10Songs, "Time Listened (Minutes)", "Song", "Time Spent Listening to Top 10 Songs", "#3498eb"), bbox_inches='tight') 
-    pdf.savefig(HorizontalBar(Time10Artists, "Time Listened (Minutes)", "Artist", "Time Spent Listening to Top 10 Artist", "#42f57e"), bbox_inches='tight') 
+pdf.save()

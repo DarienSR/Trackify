@@ -4,7 +4,7 @@ from matplotlib.backends.backend_pdf import PdfPages
 
 # xAxis is going to be your object (i.e song name)
 # yAxis is going to your comparison (i.e. number of times played)
-def HorizontalBar(data, xLabel, yLabel, title, graphColor):
+def HorizontalBar(data, xLabel, yLabel, title, graphColor, fileName):
   # data in the form of a tuple (artist, value) or (song, value)
   xAxis = []
   for obj in data:
@@ -16,6 +16,7 @@ def HorizontalBar(data, xLabel, yLabel, title, graphColor):
 
   plt.rcdefaults() # restore styling
   fig, ax = plt.subplots()
+
   
   # data
   y_pos = np.arange(len(xAxis))
@@ -31,15 +32,19 @@ def HorizontalBar(data, xLabel, yLabel, title, graphColor):
 
   # Label Bar Graphs with their values.
   count = 0
+ 
   for x in bar:
     width = x.get_width()
     # (x, y, text) x,y being the position of the text.
-    ax.text(width / 2 , count + 0.1,
+    ax.text(width / 2 , count + 0.4,
             str(round(width, 2)), # round float 
             ha='center', va='bottom',
-            fontweight = 'extra bold'
+            fontweight = 'extra bold',
           )
     count = count + 1
+  fig = plt.gcf()
+  fig.set_size_inches(2, 2) # 20 x 20 pixels
+  fig.savefig(fileName, bbox_inches='tight', dpi=100)
   plt.close()
   return fig
 
