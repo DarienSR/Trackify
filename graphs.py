@@ -1,6 +1,8 @@
 import matplotlib.pyplot as plt
 import numpy as np
 from matplotlib.backends.backend_pdf import PdfPages
+import matplotlib.image as mpimg
+import urllib.request
 
 # xAxis is going to be your object (i.e song name)
 # yAxis is going to your comparison (i.e. number of times played)
@@ -48,3 +50,7 @@ def HorizontalBar(data, xLabel, yLabel, title, graphColor, fileName):
   plt.close()
   return fig
 
+
+
+def CreateImage(image, fileName):
+  urllib.request.urlretrieve(image, fileName)
