@@ -1,14 +1,14 @@
 from graphs import *  # import our graphing file. Holds the different functions to create our graphs
-from matplotlib.backends.backend_pdf import PdfPages
+import matplotlib.pyplot as plt
+import numpy as np
 import datetime
 from databaseAnalysis import *
 from reportlab.pdfgen import canvas
 from collections import Counter
-
+from colour import Color
 # GENERATE THE IMAGES/PLOTS USED FOR THE REPORT
 # Generate The Different Plots/Images
-HorizontalBar(Top10Artists, "Times Played", "Artist", "Top 10 Most Listened to Artist", "#02e840", "./Images/Top10Artists.png")
-HorizontalBar(Top10Songs, "Times Played", "Song", "Top 10 Most Listened to Songs", "#02e840", "./Images/Top10Songs.png")
+
 
 # Connec to Spotify API
 from authentication import sp
@@ -48,18 +48,29 @@ Report.Header(pdf)
 Report.QuickStats(pdf, data, totalTimeSpentListening, Top10Songs)
 
 # Create Header for Top 10 Artists.
-Report.SubHeader(pdf, "Top 10 Artists", 18, 40, 560)
+Report.SubHeader(pdf, "Top 10 Artists", 18, 10, 560)
 pdf.setFont(MAIN_FONT, 10) # update font again
 
 # Top 10 Artists
 Report.DisplayTopTenArtists(pdf, data)
 
 # Sub Header Top 10 Songs 
-Report.SubHeader(pdf, "Top 10 Songs", 18, 40, 350)
+Report.SubHeader(pdf, "Top 10 Songs", 18, 10, 270)
 pdf.setFont(MAIN_FONT, 10) # update font again
 
 # Top 10 Songs
 Report.DisplayTopTenSongs(pdf, Top10Songs)
+
+
+
+firstColors = ["#7d84b2",	"#7177a0",	"#646a8e",	"#585c7d",	"#4b4f6b", "#7d84b2",	"#8a90ba",	"#979dc1",	"#a4a9c9",	"#b1b5d1"]
+secondColors= ["#d62839",	"#c12433",	"#ab202e",	"#961c28",	"#801822", "#d62839",	"#da3e4d",	"#de5361",	"#e26974",	"#e67e88"]
+
+PieChart(Top10Songs, "./Images/top10SongPie.png", firstColors)
+PieChart(Top10Artists, "./Images/top10ArtistPie.png", secondColors)
+
+pdf.drawInlineImage("./Images/top10ArtistPie.png", 350, 350, width=225, height=225)
+pdf.drawInlineImage("./Images/top10SongPie.png", 350, 75, width=225, height=225)
 
 pdf.showPage() # creates a new page.
 
@@ -82,7 +93,7 @@ for artist in Top10[:3]:
     y_pos = 720
     Report.SetFont(pdf, MAIN_FONT, "Listened to ", 40, y_pos, 12)
     Report.SetFont(pdf, BOLD_FONT, "%s %s " % (artist.name, artist.timesPlayed), 125, y_pos)
-    Report.SetFont(pdf, MAIN_FONT, "times ", 225, y_pos)
+    Report.SetFont(pdf, MAIN_FONT, "times ", 235, y_pos)
 
     y_pos = y_pos - 15
     Report.SetFont(pdf, MAIN_FONT, "Listened to ", 40, y_pos)
@@ -117,7 +128,9 @@ for artist in Top10[:3]:
     Report.SubHeader(pdf, "Listening Time", 14, 400, 600)
 
     y = 580
+    songs = []
     for song in artist.songs:
+        songs.append(song)
         Report.DrawText(pdf, song.name, 20, y)
         Report.DrawText(pdf, str(song.timesPlayed), 250, y)
         Report.DrawText(pdf, str(round(((song.duration / 1000) / 60) * song.timesPlayed, 0)) + " minutes", 400, y)
@@ -128,10 +141,18 @@ for artist in Top10[:3]:
 
     # This gets drawn ABOVE the listed songs. We just have to calculate total time listening here.
     Report.SetFont(pdf, MAIN_FONT, "Total time listened to ", 40, 645)
-    Report.SetFont(pdf, BOLD_FONT, "%s: %s " % (artist.name, round(total / 60, 0)), 175, 645)
-    Report.SetFont(pdf, MAIN_FONT, "minutes ", 300, 645)
+    Report.SetFont(pdf, BOLD_FONT, "%s: %s " % (artist.name, round(total / 60, 0)), 180, 645)
+    Report.SetFont(pdf, MAIN_FONT, "minutes ", 315, 645)
+    c1 = Color("#8C5383")
+    c2 = Color("#F28482")
+
+    c3 = list(c1.range_to(c2, len(songs)))
+    # Creation of graph
     
-    pdf.showPage() # Start another page for the next arits tin the top 3
+    BarChart("./Images/top%sArtistBar.png" % (count), songs, c3)
+    pdf.drawImage("./Images/top%sArtistBar.png" % (count), 100, y - 350, width=350, height=350)
+    if(count != 3):
+        pdf.showPage() # Start another page for the next arits tin the top 3
 
 # --------------------
 # -   TOP 3 FINISH   -
@@ -153,5 +174,21 @@ for artist in API_INFO['artists']:
 
 
 genres = Counter(genres)
+
+c1 = Color("#8C5383")
+c2 = Color("#F28482")
+
+c3 = list(c1.range_to(c2, len(genres)))
+
+x = []
+for color in c3:
+    x.append(color.hex)
+
+pdf.drawCentredString(300, 710, "Genres of Your Artists: %s" % (len(genres)))
+
+Report.SubHeader(pdf, "Top 25", 14, 275, 670,)
+
+BarChart("./Images/Genres.png", genres.most_common(25), c3, True)
+pdf.drawImage("./Images/Genres.png", 0, 150)
 
 pdf.save()

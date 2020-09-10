@@ -50,7 +50,48 @@ def HorizontalBar(data, xLabel, yLabel, title, graphColor, fileName):
   plt.close()
   return fig
 
-
-
 def CreateImage(image, fileName):
   urllib.request.urlretrieve(image, fileName)
+
+def BarChart(filename, data, colors, indexed=False, edgecolor="black",):
+  labels = []
+  values = [] # height
+
+  if indexed == True:
+    for x in data:
+      labels.append(x[0]) # name of artist/song
+      values.append(x[1]) # times played
+  else:
+    for x in data:
+      labels.append(x.name) # name of artist/song
+      values.append(x.timesPlayed) # times played
+  
+  fig, ax1 = plt.subplots()
+  bars = plt.bar(labels, values, width=0.8, edgecolor=edgecolor)
+  idx = 0
+  for bar in bars:
+    bar.set_color(colors[idx].hex)
+    idx = idx + 1
+
+  plt.xticks(rotation=90)
+  fig = plt.gcf()
+  fig.savefig(filename, bbox_inches='tight', dpi=100)  
+  
+def PieChart(data, filename, colors, radius = 1):
+  labels = []
+  values = []
+  for x in data:
+    labels.append(x[0]) # name of artist/song
+    values.append(x[1]) # times played
+
+  fig, ax1 = plt.subplots()
+  plt.rcParams['axes.labelweight'] = 'bold'
+  plt.rcParams['lines.linewidth'] = 2
+  plt.rcParams['patch.edgecolor'] = 'black'
+  pie = plt.pie(values, labels=labels, autopct="%.1f%%", colors=colors , radius=radius)
+
+
+  fig = plt.gcf()
+  fig.savefig(filename, bbox_inches='tight', dpi=100)
+  plt.close()
+  

@@ -1,21 +1,27 @@
 # Trackify
 
-
 Trackify tracks your Spotify listening habits and generates a pdf report based on that information.
 
-######                                                                                                                                                                                                                                                                                                                                                      Sample Report
+######                                                                                                                                                                                                                                                                                                                                                      Sample Report 
 
-![Trackify Report](https://i.imgur.com/KE9k3Xm.png)
+#### Example of Quick Stats and Top 10 Artists
 
-![Trackify Report Page 2](https://i.imgur.com/8a5edHb.png)
+![Trackify Report](https://i.imgur.com/OGgRRxc.png)
+
+
+
+#### Example of Top Artist Page
+
+![Trackify Report](https://i.imgur.com/HnPkug3.png)
+
+
 
 
 
 
 ## To Do:
 
-* Add Graphs/Plots using matplotlib
-* Include genre breakdown and artist listening frequency on report
 * Automate setup and tracking features (right now, you have to manually run the file to track)
-* Improve PDF formatting
+* Refactor/Clean Up Code
+* Improve PDF formatting, add artist listening frequency (weekly basis?) on report
 * Improve performance (including DB redesign)
